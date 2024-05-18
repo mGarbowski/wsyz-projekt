@@ -1,16 +1,8 @@
-""" Running this script regenerates all of the data files!"""
+""" Running this script regenerates all of the data files"""
 
 import pickle
 import random
 from utils import *
-
-weekly_demand_bounds = {
-    # Weekly demand bounds for each vegetable in kilograms
-    Vegetable.CARROT: (200, 400),
-    Vegetable.CABBAGE: (100, 300),
-    Vegetable.BEETROOT: (50, 200),
-    Vegetable.POTATO: (300, 550),
-}
 
 
 def generate_weekly_demand() -> dict[int, list[dict[Vegetable, int]]]:
