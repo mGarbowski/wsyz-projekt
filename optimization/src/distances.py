@@ -3,8 +3,8 @@ import googlemaps
 import pickle
 import os
 
-from objects import get_all_locations
-from models import Location
+from instances import get_all_locations
+from objects import Location, Manufacturer, Shop, Warehouse
 
 load_dotenv()
 DISTANCES_CACHE = "data/distances.pkl"
@@ -25,7 +25,7 @@ def get_distance(
     return distance / 1000
 
 
-def calculate_distances():
+def get_distances() -> dict[tuple[Warehouse, Shop | Manufacturer], float]:
     """Calculates the distances between the manufacturers, shops and warehouses. The distances are stored in a pickle file,
     if it's not found, the function makes google maps api requests. An API key needs to be passed
     via the .env API_KEY variable."""
@@ -38,21 +38,10 @@ def calculate_distances():
     manufacturers, shops, warehouses = get_all_locations()
     gmaps = googlemaps.Client(key=os.getenv("API_KEY"))
 
-    for manufacturer in manufacturers:
-        for warehouse in warehouses:
-            distances[(manufacturer, warehouse)] = distances[
-                (warehouse, manufacturer)
-            ] = get_distance(manufacturer, warehouse, gmaps)
-
     for warehouse in warehouses:
-        for shop in shops:
-            distances[(warehouse, shop)] = distances[(shop, warehouse)] = get_distance(
-                warehouse, shop, gmaps
-            )
+        for location in shops + manufacturers:
+            distances[(warehouse, location)] = get_distance(warehouse, location, gmaps)
+
     pickle.dump(distances, open(DISTANCES_CACHE, "wb"))
 
     return distances
-
-
-if __name__ == "__main__":
-    print(calculate_distances())
