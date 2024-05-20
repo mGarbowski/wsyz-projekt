@@ -1,5 +1,6 @@
 from abstract import model
-from instances import get_shops, get_warehouses, get_manufacturers
+import pyomo.util.infeasible as infeas
+from instances import KILOS_PER_TON, get_shops, get_warehouses, get_manufacturers
 from distances import get_distances
 from utils import get_weekly_demand, WEEKS_PER_YEAR
 from statistics import mean
@@ -48,13 +49,7 @@ data = pyo_mapping(
         "Manufacturers": manufacturers,
         "Shops": shops,
         "Warehouses": warehouses,
-        # "Distances": distances, TODO
-        "WarehouseShopDistances": {
-            (w, s): distances[(w, s)] for w in warehouses for s in shops
-        },
-        "WarehouseManufacturerDistances": {
-            (w, m): distances[(w, m)] for w in warehouses for m in manufacturers
-        },
+        "Distances": distances,
         "ManufacturerCapabilities": flat_manufacturer_capabilities,
         "ExpectedDemand": demand,
         "OnSiteWarehouseCapacity": {
@@ -62,15 +57,22 @@ data = pyo_mapping(
         },
         "MinimumStock": minimum_stock,
         "WarehouseCapacity": {w: w.capacity for w in warehouses},
-        "FuelPrice": pyo_mapping(5),
+        "FuelPrice": pyo_mapping(5 / KILOS_PER_TON),
     }
 )
 
 if __name__ == "__main__":
     instance = model.create_instance(data)
     opt = pyo.SolverFactory("cbc")
-    print(opt.solve(instance))
-    import pyomo.util.infeasible as infeas
+    results = opt.solve(instance, tee=True)
+    print(results)
+
+    for parmobject in instance.component_objects(pyo.Param, active=True):
+        nametoprint = str(str(parmobject.name))
+        print("Parameter ", nametoprint)
+        for index in parmobject:
+            vtoprint = pyo.value(parmobject[index])
+            print("   ", index, vtoprint)
 
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)

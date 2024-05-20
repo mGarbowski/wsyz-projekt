@@ -40,17 +40,9 @@ model.WarehouseCapacity = pyo.Param(model.Warehouses, within=pyo.NonNegativeInte
 model.FuelPrice = pyo.Param(within=pyo.NonNegativeReals)
 
 # Distances between locations
-model.Distances = pyo.Param(model.Warehouses, model.Shops | model.Manufacturers)  # type: ignore
+model.Distances = pyo.Param(model.Warehouses, model.Manufacturers | model.Shops)  # type: ignore
 
-# TODO DEDUPLICATE
-model.WarehouseShopDistances = pyo.Param(
-    model.Warehouses, model.Shops, within=pyo.NonNegativeReals
-)
-model.WarehouseManufacturerDistances = pyo.Param(
-    model.Warehouses, model.Manufacturers, within=pyo.NonNegativeReals
-)
-
-# Number of tons shipped from manufacturer to warehouses yearly
+# Number of kilos shipped from manufacturer to warehouses yearly
 model.shipped_from_manufacturer = pyo.Var(
     model.Manufacturers,
     model.Warehouses,
@@ -76,16 +68,18 @@ model.leftover_stock = pyo.Var(
 )
 
 
-# Constraints
 def leftover_equality_constraint(model, shop, week, product):
     """Constraint that sets the value of leftover stock in the on-site warehouse after each week"""
     if week == 1:
         return model.leftover_stock[week, shop, product] == 0
     return (
-        model.leftover_stock[week, shop, product]
-        == model.leftover_stock[week - 1, shop, product]
-        + model.shipped_from_warehouse[week, model.Warehouses[1], shop, product]
+        model.leftover_stock[week - 1, shop, product]
+        + sum(
+            model.shipped_from_warehouse[week, warehouse, shop, product]
+            for warehouse in model.Warehouses
+        )
         - model.ExpectedDemand[shop, week, product]
+        == model.leftover_stock[week, shop, product]
     )
 
 
@@ -156,7 +150,7 @@ def minimum_stock_constraint(model, shop, week, product):
     )
 
 
-# # Add the defined constraints to the model
+# Add the defined constraints to the model
 
 model.leftover_equality_constraint = pyo.Constraint(
     model.Shops, model.Weeks, model.Products, rule=leftover_equality_constraint
@@ -184,14 +178,14 @@ def objective_function(model):
     return sum(
         model.FuelPrice
         * model.shipped_from_manufacturer[manufacturer, warehouse, product]
-        * model.WarehouseManufacturerDistances[warehouse, manufacturer]
+        * model.Distances[warehouse, manufacturer]
         for manufacturer in model.Manufacturers
         for warehouse in model.Warehouses
         for product in model.Products
     ) + sum(
         model.FuelPrice
         * model.shipped_from_warehouse[week, warehouse, shop, product]
-        * model.WarehouseShopDistances[warehouse, shop]
+        * model.Distances[warehouse, shop]
         for week in model.Weeks
         for warehouse in model.Warehouses
         for shop in model.Shops
