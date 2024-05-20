@@ -6,6 +6,7 @@ import os
 
 DEMAND_FILE = "data/demand.pkl"
 WEEKS_PER_YEAR = 52
+KILOS_PER_TON = 1000
 
 
 type Week = int

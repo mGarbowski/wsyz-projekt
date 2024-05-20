@@ -23,8 +23,10 @@ model.Shops = pyo.Set(dimen=1)
 model.ExpectedDemand = pyo.Param(
     model.Shops, model.Weeks, model.Products, within=pyo.NonNegativeIntegers
 )
+
 #  The on-site warehouse capacity of each shop
 model.OnSiteWarehouseCapacity = pyo.Param(model.Shops, within=pyo.NonNegativeIntegers)
+
 # The required "padding" for each product in each shop each week
 model.MinimumStock = pyo.Param(
     model.Shops, model.Products, within=pyo.NonNegativeIntegers
@@ -36,7 +38,7 @@ model.Warehouses = pyo.Set(dimen=1)
 model.WarehouseCapacity = pyo.Param(model.Warehouses, within=pyo.NonNegativeIntegers)
 
 
-# Cost of transporting a ton of product by a kilometer
+# Cost of transporting a ton of product by a kilometer TODO
 model.FuelPrice = pyo.Param(within=pyo.NonNegativeReals)
 
 # Distances between locations
@@ -110,6 +112,7 @@ def on_site_warehouse_capacity_constraint(model, shop, week):
     """Constraint to ensure that the capacity of the on-site warehouse is not exceeded"""
     if week == 1:
         return (
+            # No week 0, edge case
             sum(
                 model.shipped_from_warehouse[week, warehouse, shop, product]
                 for warehouse in model.Warehouses
@@ -124,7 +127,9 @@ def on_site_warehouse_capacity_constraint(model, shop, week):
             for product in model.Products
         )
         + sum(
-            model.leftover_stock[week - 1, shop, product] for product in model.Products
+            # Yes week -1, no edge case
+            model.leftover_stock[week - 1, shop, product]
+            for product in model.Products
         )
         <= model.OnSiteWarehouseCapacity[shop]
     )
@@ -134,6 +139,7 @@ def minimum_stock_constraint(model, shop, week, product):
     """Constraint to ensure that the minimum stock of a product in a shop is maintained"""
     if week == 1:
         return (
+            # No week 0, edge case
             sum(
                 model.shipped_from_warehouse[week, warehouse, shop, product]
                 for warehouse in model.Warehouses
@@ -141,6 +147,7 @@ def minimum_stock_constraint(model, shop, week, product):
             >= model.MinimumStock[shop, product]
         )
     return (
+        # Yes week -1, no edge case
         sum(
             model.shipped_from_warehouse[week, warehouse, shop, product]
             for warehouse in model.Warehouses
@@ -176,6 +183,7 @@ model.minimum_stock_constraint = pyo.Constraint(
 def objective_function(model):
     """The objective function is to minimize the total cost of transportation"""
     return sum(
+        # Cost of transporting from manufacturers to warehouses
         model.FuelPrice
         * model.shipped_from_manufacturer[manufacturer, warehouse, product]
         * model.Distances[warehouse, manufacturer]
@@ -183,6 +191,7 @@ def objective_function(model):
         for warehouse in model.Warehouses
         for product in model.Products
     ) + sum(
+        # Cost of transporting from warehouses to shops
         model.FuelPrice
         * model.shipped_from_warehouse[week, warehouse, shop, product]
         * model.Distances[warehouse, shop]
@@ -193,4 +202,5 @@ def objective_function(model):
     )
 
 
+# Assign the objective function to the model
 model.OBJ = pyo.Objective(rule=objective_function, sense=pyo.minimize)

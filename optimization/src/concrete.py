@@ -1,12 +1,8 @@
-from abstract import model
-import pyomo.util.infeasible as infeas
-from instances import KILOS_PER_TON, get_shops, get_warehouses, get_manufacturers
+from instances import get_shops, get_warehouses, get_manufacturers
 from distances import get_distances
-from utils import get_weekly_demand, WEEKS_PER_YEAR
+from utils import get_weekly_demand, WEEKS_PER_YEAR, KILOS_PER_TON
 from statistics import mean
 from objects import Vegetable
-import pyomo.environ as pyo
-import logging
 
 
 manufacturers, shops, warehouses, distances, demand = (
@@ -39,7 +35,10 @@ def pyo_mapping(v):
 
 
 flat_manufacturer_capabilities = {
-    (m, v): m.capabilities[v] for m in manufacturers for v in Vegetable
+    # Flatten the manufacturer capabilities to fit the pyomo indexing
+    (m, v): m.capabilities[v]
+    for m in manufacturers
+    for v in Vegetable
 }
 
 data = pyo_mapping(
@@ -60,24 +59,3 @@ data = pyo_mapping(
         "FuelPrice": pyo_mapping(5 / KILOS_PER_TON),
     }
 )
-
-if __name__ == "__main__":
-    instance = model.create_instance(data)
-    opt = pyo.SolverFactory("cbc")
-    results = opt.solve(instance, tee=True)
-    print(results)
-
-    for parmobject in instance.component_objects(pyo.Param, active=True):
-        nametoprint = str(str(parmobject.name))
-        print("Parameter ", nametoprint)
-        for index in parmobject:
-            vtoprint = pyo.value(parmobject[index])
-            print("   ", index, vtoprint)
-
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(logging.DEBUG)
-    logger.addHandler(ch)
-
-    infeas.log_infeasible_constraints(instance, logger=logger)

@@ -22,7 +22,7 @@ def get_distance(
     )["rows"][0]["elements"][0]["distance"]["value"]
 
     # return the distance in kilometers
-    return distance / 1000
+    return round(distance / 1000)
 
 
 def get_distances() -> dict[tuple[Warehouse, Shop | Manufacturer], float]:

@@ -1,5 +1,4 @@
 from objects import Manufacturer, Shop, Warehouse, Vegetable
-from statistics import mean
 
 KILOS_PER_TON = 1000
 weekly_demand_bounds = {
