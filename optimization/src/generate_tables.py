@@ -24,7 +24,7 @@ def deflatten_manufacturer_shipments(manufacturer_shipments: pyo.Var) -> dict:
     rv = {}
     for index in manufacturer_shipments:
         manufacturer, warehouse, product = index  # type: ignore
-        if key := (str(manufacturer), str(warehouse)) not in rv:
+        if (key := (str(manufacturer), str(warehouse))) not in rv:
             rv[key] = {}
         rv[key][product.name] = pyo.value(manufacturer_shipments[index])
 
