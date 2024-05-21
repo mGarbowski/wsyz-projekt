@@ -145,6 +145,8 @@ generujący wynikowe pliki csv
 
 ## Instrukcja użycia 
 * instalacja zależności - `pip -r install requirements.txt`, najlepiej przy użyciu `venv`
+* instalacja solvera CBC - w przypadku ubuntu, `sudo apt-get install  coinor-cbc coinor-libcbc-dev`, w przypadku windowsa opisane
+w [ jego repozytorium ]( https://github.com/coin-or/Cbc )
 * uruchomienie aplikacji - `python -m main` wyświetla wartość funkcji celu
 * aby zaktualizować dane wejściowe po modyfikacji modelu, należy wyczyścić katalog `data`: `rm data/*`
 * do pobrania uaktualnionych danych dotyczących dystansów między lokalizacjami), należy w pliku
