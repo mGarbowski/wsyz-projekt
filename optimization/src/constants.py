@@ -1,6 +1,11 @@
-from objects import Manufacturer, Shop, Warehouse, Vegetable
+from src.objects import Manufacturer, Shop, Warehouse, Vegetable
 
+"""Constant values, as well as concrete dataclass instances"""
+
+WEEKS_PER_YEAR = 52
 KILOS_PER_TON = 1000
+
+
 weekly_demand_bounds = {
     # Weekly demand bounds for each vegetable in kilograms
     Vegetable.CARROT: (200, 400),
@@ -13,8 +18,8 @@ weekly_demand_bounds = {
 def get_shops() -> list[Shop]:
     """Get the list of shops"""
 
-    # In case we change the demand bounds, the internal warehouse capacity will be recalculated
-    max_weekly_demand = sum(bounds[1] for bounds in weekly_demand_bounds.values())
+    # In case we change the demand bounds, the internal warehouse capacity is recalculated on each run
+    max_weekly_demand = 2 * sum(bounds[1] for bounds in weekly_demand_bounds.values())
 
     return [
         Shop(
@@ -65,7 +70,7 @@ def get_shops() -> list[Shop]:
         Shop(
             (52.209244900152974, 21.008531883983533),
             "Aleja Niepodległości 162",
-            int(0.9 * max_weekly_demand),
+            int(1.2 * max_weekly_demand),
         ),
     ]
 

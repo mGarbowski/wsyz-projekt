@@ -3,8 +3,8 @@ import googlemaps
 import pickle
 import os
 
-from instances import get_all_locations
-from objects import Location, Manufacturer, Shop, Warehouse
+from src.constants import get_all_locations
+from src.objects import Location, Manufacturer, Shop, Warehouse
 
 load_dotenv()
 DISTANCES_CACHE = "data/distances.pkl"

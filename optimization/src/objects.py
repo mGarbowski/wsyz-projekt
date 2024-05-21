@@ -12,7 +12,6 @@ class Vegetable(enum.Enum):
 
 
 type Coordinate = tuple[float, float]
-type Tons = int
 type Kilos = int
 
 
@@ -30,13 +29,19 @@ class Shop(Location):
     address: str
     on_site_warehouse_capacity: Kilos
 
+    def __str__(self) -> str:
+        return self.address
+
 
 @dataclass(frozen=True, unsafe_hash=True)
 class Manufacturer(Location):
     """Class representing a manufacturer."""
 
     city: str
-    capabilities: dict[Vegetable, Tons] = field(hash=False)
+    capabilities: dict[Vegetable, Kilos] = field(hash=False)
+
+    def __str__(self) -> str:
+        return self.city
 
 
 @dataclass(frozen=True)
@@ -44,4 +49,7 @@ class Warehouse(Location):
     """Class representing a warehouse."""
 
     city: str
-    capacity: Tons
+    capacity: Kilos
+
+    def __str__(self) -> str:
+        return self.city

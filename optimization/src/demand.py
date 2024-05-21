@@ -1,12 +1,10 @@
 import pickle
 import random
-from instances import get_shops, weekly_demand_bounds
-from objects import Shop, Vegetable
+from src.constants import get_shops, weekly_demand_bounds, WEEKS_PER_YEAR
+from src.objects import Shop, Vegetable
 import os
 
 DEMAND_FILE = "data/demand.pkl"
-WEEKS_PER_YEAR = 52
-KILOS_PER_TON = 1000
 
 
 type Week = int

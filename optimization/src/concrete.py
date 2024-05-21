@@ -1,8 +1,14 @@
-from instances import get_shops, get_warehouses, get_manufacturers
-from distances import get_distances
-from utils import get_weekly_demand, WEEKS_PER_YEAR, KILOS_PER_TON
+from src.constants import (
+    get_shops,
+    get_warehouses,
+    get_manufacturers,
+    WEEKS_PER_YEAR,
+    KILOS_PER_TON,
+)
+from src.distances import get_distances
+from src.demand import get_weekly_demand
 from statistics import mean
-from objects import Vegetable
+from src.objects import Vegetable
 
 
 manufacturers, shops, warehouses, distances, demand = (

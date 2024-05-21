@@ -38,7 +38,7 @@ model.Warehouses = pyo.Set(dimen=1)
 model.WarehouseCapacity = pyo.Param(model.Warehouses, within=pyo.NonNegativeIntegers)
 
 
-# Cost of transporting a ton of product by a kilometer TODO
+# Cost of transporting a ton of product by a kilometer
 model.FuelPrice = pyo.Param(within=pyo.NonNegativeReals)
 
 # Distances between locations
@@ -135,25 +135,36 @@ def on_site_warehouse_capacity_constraint(model, shop, week):
     )
 
 
-def minimum_stock_constraint(model, shop, week, product):
-    """Constraint to ensure that the minimum stock of a product in a shop is maintained"""
+def shipment_relation_constraint(model, warehouse, product):
+    """Constraint to ensure that the shipments from warehouses to shops are related to the shipments from manufacturers to warehouses"""
+    return sum(
+        model.shipped_from_warehouse[week, warehouse, shop, product]
+        for week in model.Weeks
+        for shop in model.Shops
+    ) <= sum(
+        model.shipped_from_manufacturer[manufacturer, warehouse, product]
+        for manufacturer in model.Manufacturers
+    )
+
+
+def demand_met_constraint(model, shop, week, product):
+    """Constraint to ensure that the demand for a product in a shop is met"""
     if week == 1:
         return (
-            # No week 0, edge case
             sum(
                 model.shipped_from_warehouse[week, warehouse, shop, product]
                 for warehouse in model.Warehouses
             )
-            >= model.MinimumStock[shop, product]
+            >= model.ExpectedDemand[shop, week, product]
+            + model.MinimumStock[shop, product]
         )
     return (
-        # Yes week -1, no edge case
         sum(
             model.shipped_from_warehouse[week, warehouse, shop, product]
             for warehouse in model.Warehouses
         )
         + model.leftover_stock[week - 1, shop, product]
-        >= model.MinimumStock[shop, product]
+        >= model.ExpectedDemand[shop, week, product] + model.MinimumStock[shop, product]
     )
 
 
@@ -174,8 +185,14 @@ model.on_site_warehouse_capacity_constraint = pyo.Constraint(
     model.Shops, model.Weeks, rule=on_site_warehouse_capacity_constraint
 )
 
-model.minimum_stock_constraint = pyo.Constraint(
-    model.Shops, model.Weeks, model.Products, rule=minimum_stock_constraint
+model.demand_met_constraint = pyo.Constraint(
+    model.Shops, model.Weeks, model.Products, rule=demand_met_constraint
+)
+
+model.shipment_relation_constraint = pyo.Constraint(
+    model.Warehouses,
+    model.Products,
+    rule=shipment_relation_constraint,
 )
 
 
