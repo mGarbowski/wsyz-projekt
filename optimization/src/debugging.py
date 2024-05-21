@@ -1,5 +1,5 @@
 import pyomo.environ as pyo
-import pprint
+from pprint import pprint
 
 
 def debug_instance(instance: pyo.ConcreteModel, results):
@@ -79,5 +79,17 @@ def debug_instance(instance: pyo.ConcreteModel, results):
         {
             str(index): index.capabilities  # type: ignore
             for index in instance.Manufacturers  # type: ignore
+        }
+    )
+
+    print("Sum of leftover products each week")
+    print(
+        {
+            week: sum(
+                pyo.value(instance.leftover_stock[week, shop, product])  # type: ignore
+                for shop in instance.Shops  # type: ignore
+                for product in instance.Products  # type: ignore
+            )
+            for week in instance.Weeks  # type: ignore
         }
     )
