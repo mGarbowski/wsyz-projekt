@@ -1,12 +1,11 @@
 # WSYZ - Projekt
-
+https://github.com/mGarbowski/wsyz-projekt
 
 * Maksym Bieńkowski
 * Michał Łuszczek
 * Mikołaj Garbowski
 
-Projekt jest poświęcony problemowi produkcji i dystrybucji podstawowych warzyw (ziemniaków, kapusty, buraków, marchwi)
-w Warszawie i okolicach między grupą producentów, siecią magazynów-chłodni i siecią sklepów spożywczych.
+Projekt jest poświęcony problemowi produkcji i dystrybucji podstawowych warzyw (ziemniaków, kapusty, buraków, marchwi) w Warszawie i okolicach między grupą producentów, siecią magazynów-chłodni i siecią sklepów spożywczych.
 
 
 <div style="page-break-after: always;"></div>
