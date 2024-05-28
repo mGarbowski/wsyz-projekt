@@ -88,38 +88,125 @@ Diagramy BPMN przygotowane w programie Bizagi Modeler, zdefiniowane w pliku [Mod
 * Wielkości dostaw każdego z warzyw z magazynów do sklepów w kolejnych tygodniach
 
 <div style="page-break-after: always;"></div>
-
+### Zbiory
+* Produkty $P$
+* Producenci $M$
+* Sklepy $S$
+* Hurtownie $W$
 
 ### Parametry
-* Produkty
-* Liczba tygodni symulacji
-* Ponumerowane tygodnie
-* Producenci
-* Możliwości przerobowe producentów
-* Sklepy
-* Prognozowany popyt
-* Pojemność przysklepowych magazynów
-* Minimum zapasu powyżej prognozy popytu
-* Hurtownie
-* Pojemności hurtowni
-* Koszt transportu
+* Liczba tygodni symulacji $NW \in \mathbb{N}+$
+* Koszt transportu $FP \in \mathbb{R}+$
+* Ponumerowane tygodnie $T = \{1 \ldots NW\}$ 
+* Możliwości przerobowe producentów $MC \quad [M,P]$
+* Prognozowany popyt $D \quad [S, T, P]$
+* Pojemność przysklepowych magazynów $SWC \quad [S]$
+* Minimum zapasu powyżej prognozy popytu $MS \quad [S,P]$
+* Pojemności hurtowni $WC \quad [W]$
 
 ### Zmienne
-* Ilość warzyw wysyłana jesienią od poszczególnych producentów do magazynów
-* Ilość warzyw wysyłana co tydzień z poszczególnych magazynów do sklepów
-* Ilość warzyw pozostała po każdym tygodniu sprzedaży
+* Ilość warzyw wysyłana jesienią od poszczególnych producentów do magazynów $SFM \quad [M,W,P]$
+* Ilość warzyw wysyłana co tydzień z poszczególnych magazynów do sklepów $SFW \quad [T,W,S,P]$
+* Ilość warzyw pozostała po każdym tygodniu sprzedaży $L \quad [T, S, P]$
 
 ### Ograniczenia
-* Ograniczenie wiążące ilość pozostałych warzyw w każdym tygodniu ze stanem na początku tygodnia i popytem
-* Ograniczenie zapewniające nieprzekroczenie mocy przerobowej producentów
-* Ograniczenie zapewniające nieprzekroczenie pojemności magazynów 
-* Ograniczenie zapewniające nieprzekroczenie pojemności magazynów na terenach sklepów
-* Ograniczenie wiążące ilość produktów wysłanych od producentów z tymi wysłanymi do sklepów
-* Ograniczenie zapewniające spełnienie popytu z określoną nadwyżką
+1. Ograniczenie wiążące ilość pozostałych warzyw w każdym tygodniu ze stanem na początku tygodnia i popytem
+2. Ograniczenie zapewniające nieprzekroczenie mocy przerobowej producentów
+3. Ograniczenie zapewniające nieprzekroczenie pojemności magazynów 
+4. Ograniczenie zapewniające nieprzekroczenie pojemności magazynów na terenach sklepów
+5. Ograniczenie wiążące ilość produktów wysłanych od producentów z tymi wysłanymi do sklepów
+6. Ograniczenie zapewniające spełnienie popytu z określoną nadwyżką
 
 
 <div style="page-break-after: always;"></div>
+### Model matematyczny
+#### (1) Pozostałe warzywa w magazynie przysklepowym
+$$\forall_{s \in S} \forall_{p \in P} \quad l_{[1,s,p]} = 0$$
+$$
+\forall_{t \in T - \{1\}} 
+\forall_{s \in S} 
+\forall_{p \in P}
+\quad
+l_{[t,s,p]} = l_{[t-1,s,p]} - d_{[s,t,p]} + \sum_{w \in W} sfw_{[t, w, s, p]}
+$$
 
+#### (2) Ograniczenie mocy przerobowej producentów
+$$
+\forall_{m \in M}
+\forall_{p \in P}
+\quad
+\sum_{w \in W} sfm_{[m,w,p]} \le mc_{[m,p]}
+$$
+#### (3) Ograniczenie pojemności magazynu
+$$
+\forall_{w \in W}
+\sum_{m \in M}
+\sum_{p \in P}
+sfm_{[m,w,p]}
+\le
+wc_w
+$$
+
+#### (4) Ograniczenie pojemności przysklepowych magazynów
+$$
+\forall_{s \in S}
+\sum_{w \in W}
+\sum_{p \in P}
+sfw_{[1,w,s,p]}
+\le
+swc_s
+$$
+
+$$
+\forall_{t \in T-\{1\}}
+\sum_{w \in W}
+\sum_{p \in P}
+sfw_{[t,w,s,p]}
++
+\sum_{p \in P}
+l_{[t-1,s,p]}
+\le
+swc_s
+$$
+
+#### (5) Ograniczenie dostaw do sklepów przez dostawy do magazynów
+$$
+\forall_{w \in W}
+\forall_{p \in P}
+\sum_{t \in T} \sum_{s \in S} sfw_[t,w,s,p]
+\le
+\sum_{m \in M} sfm_{[m,w,p]}
+$$
+#### (6) Ograniczenie zaspokojenia popytu
+ $$
+\forall_{s \in S}
+\forall_{p \in P}
+\sum_{w \in W} sfw_{[1,w,s,p]}
+\ge
+d_{[s,1,p]} + ms_{[s,p]}
+$$
+
+$$
+\forall_{s \in S}
+\forall_{t \in T-\{1\}}
+\forall_{p \in P}
+\sum_{w \in W} sfw_{[t,w,s,p]} + l_{[t-1,s,p]}
+\ge
+d_{[s,t,p]} + ms_{[s,p]}
+$$
+#### Koszt transportu
+$$
+\sum_{m \in M}
+\sum_{w \in W}
+\sum_{p \in P}
+FP \cdot sfm_{[m,w,p]} \cdot dist_{[w,m]}
++
+\sum_{t \in T}
+\sum_{w \in W}
+\sum_{s \in S}
+\sum_{p \in P}
+FP \cdot sfw_{[t,w,s,p]} \cdot dist_{[w,s]}
+$$
 
 ### Wyniki
 * Minimalizowany całkowity roczny koszt transportu wynosi 91689.68 PLN
